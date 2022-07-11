@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { useParams } from "react-router-dom";
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
+import Card from "../../shared/components/UIElements/Card";
 
 import "./PlaceForm.css";
 import { useForm } from "../../shared/hooks/form-hooks";
@@ -46,23 +47,42 @@ const DUMMY_PLACES = [
 ];
 
 const UpdatePlace = (props) => {
+  const [isLoading, setIsLoading] = useState(true);
   const placeId = useParams().placeId;
 
-  const indentifiedPlace = DUMMY_PLACES.find((place) => place.id === placeId);
-
-  const [formState, inputHandler] = useForm(
+  const [formState, inputHandler, setFormData] = useForm(
     {
       title: {
-        value: indentifiedPlace.title,
-        isValid: true,
+        value: "",
+        isValid: false,
       },
       description: {
-        value: indentifiedPlace.description,
-        isValid: true,
+        value: "",
+        isValid: false,
       },
     },
-    true
+    false
   );
+  const indentifiedPlace = DUMMY_PLACES.find((place) => place.id === placeId);
+
+  useEffect(() => {
+    if (indentifiedPlace) {
+      setFormData(
+        {
+          title: {
+            value: indentifiedPlace.title,
+            isValid: true,
+          },
+          description: {
+            value: indentifiedPlace.description,
+            isValid: true,
+          },
+        },
+        true
+      );
+    }
+    setIsLoading(false);
+  }, [setFormData, indentifiedPlace]);
 
   const placeUpdateSubmitHandler = (event) => {
     event.preventDefault();
@@ -72,7 +92,16 @@ const UpdatePlace = (props) => {
   if (!indentifiedPlace) {
     return (
       <div className="center">
-        <h2>Could not find the place</h2>
+        <Card>
+          <h2>Could not find the place</h2>
+        </Card>
+      </div>
+    );
+  }
+  if (isLoading) {
+    return (
+      <div className="center">
+        <h2>Loading...</h2>
       </div>
     );
   }
